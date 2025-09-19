@@ -1,0 +1,13 @@
+[project]
+name = "agentic-data-pipeline"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.40.34",
+    "duckdb>=1.4.0",
+    "langchain-ollama>=0.3.8",
+    "langgraph>=0.6.7",
+    "python-dotenv>=1.1.1",
+]
