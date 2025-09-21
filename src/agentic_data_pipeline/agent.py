@@ -30,7 +30,7 @@ def run_pipeline(llm):
         {
             "messages": [
                 ("system", system_prompt),
-                ("user", "In the 'demos' S3 bucket, ensure each CSV has a matching bronze_<name> table in DuckDB—list files, compare to existing tables, and create any missing bronze tables. Then, for each bronze_<name> table, check for NULLs: if found, clean them and write to silver_<name>; if none, copy directly to silver_<name>.")
+                ("user", "In the 'demos' S3 bucket, ensure each CSV has a matching bronze_<name> table in DuckDB—list files, compare to existing tables, and create any missing bronze tables. For each bronze_<name> table, if silver_<name> does not exist, check for NULLs and promote the data to silver_<name> (cleaning NULLs if needed). If silver_<name> already exists, profile it and then create a few joined/aggregated derived tables across the silver tables. Summarize which bronze and silver tables were created, how NULLs were handled, and which derived tables were built.")
             ]
         },
         config={

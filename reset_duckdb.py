@@ -41,5 +41,5 @@ def verify_duckdb():
     con.close()
 
 if __name__ == "__main__":
-    reset_duckdb()
-    #verify_duckdb()
+    #reset_duckdb()
+    verify_duckdb()

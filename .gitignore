@@ -56,7 +56,6 @@ cover/
 *.pot
 
 # Django stuff:
-*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -211,8 +210,7 @@ ehthumbs_vista.db
 *.tmp
 *.temp
 
-# Log files
-*.log
+
 
 # Database files
 *.db
