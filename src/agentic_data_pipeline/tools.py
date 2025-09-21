@@ -3,6 +3,8 @@ import duckdb
 import os
 from dotenv import load_dotenv
 from langchain_core.tools import tool
+import pandas as pd
+import io
 
 
 load_dotenv()
@@ -25,6 +27,11 @@ def _get_s3_client():
         use_ssl=os.getenv("S3_SECURE")
     )
 
+def _fetch_csv_as_df(bucket: str, key: str) -> pd.DataFrame:
+    """Internal helper: fetch a CSV from S3/MinIO and return as DataFrame."""
+    client = _get_s3_client()
+    obj = client.get_object(Bucket=bucket, Key=key)
+    return pd.read_csv(io.BytesIO(obj["Body"].read()))
 
 @tool
 def list_s3_files() -> list[str]:
@@ -34,12 +41,9 @@ def list_s3_files() -> list[str]:
     return [item['Key'] for item in response.get('Contents', [])]
 
 
-# ---------------------------
-# Core DB inspection & execution
-# ---------------------------
 @tool
-def list_tables():
-    """Return a list of all tables in DuckDB."""
+def list_tables_in_duckdb(database_name:str) -> list[str] :
+    """Return a list of all tables in DuckDB"""
     con = _create_duckdb_connection()
     try:
         return [t[0] for t in con.execute("SHOW TABLES").fetchall()]
@@ -54,3 +58,48 @@ def describe_table(table_name: str):
         return con.execute(f"DESCRIBE {table_name}").fetchall()
     finally:
         con.close()
+
+@tool
+def load_csv_to_duckdb(bucket: str, key: str, table: str) -> str:
+    """
+    Load a CSV from S3/MinIO into DuckDB as a table.
+    Overwrites the table if it already exists.
+    """
+    df = _fetch_csv_as_df(bucket, key)
+    con = _create_duckdb_connection()
+    try:
+        con.execute(f"DROP TABLE IF EXISTS {table}")
+        con.register("temp_df", df)
+        con.execute(f"CREATE TABLE {table} AS SELECT * FROM temp_df")
+        con.unregister("temp_df")
+    finally:
+        con.close()
+    return table
+
+@tool
+def fetch_table_as_df(table: str) -> pd.DataFrame:
+    """Return a DuckDB table as a Pandas DataFrame."""
+    con = _create_duckdb_connection()
+    try:
+        return con.execute(f"SELECT * FROM {table}").fetchdf()
+    finally:
+        con.close()
+
+@tool
+def execute_sql(sql: str) -> str:
+    """
+    Executes arbitrary SQL against DuckDB and returns a stringified result.
+    """
+    con = _create_duckdb_connection()
+    try:
+        result = con.execute(sql).fetchall()
+        return str(result)
+    finally:
+        con.close()
+@tool
+def get_table_schema(table: str) -> list[str]:
+    """Return the column names of a given DuckDB table."""
+    con = _create_duckdb_connection()
+    cols = con.execute(f"PRAGMA table_info({table})").fetchall()
+    con.close()
+    return [c[1] for c in cols]  # column names
