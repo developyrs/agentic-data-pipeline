@@ -62,7 +62,7 @@ The orchestration is driven by two prompt files:
   Defines the overall mission and rules for the agent  
 
 - **User prompt**:  
-  `src/agentic_data_pipeline/prompts/user_prompt.txt`  
+  This is in the agent.py file.  
   Defines the specific task for this run (e.g., promote bronze → silver, build aggregates)  
 
 You can edit these to change the agent’s behavior.  
@@ -90,10 +90,9 @@ The repo includes a helper script: **reset_duckdb.py**
 
 This script provides two key functions for users:
 
-- **Verification mode** — checks that DuckDB is reachable and that the expected tables exist  
-- **Reset mode** — clears out DuckDB state so you can start fresh with a clean pipeline run  
+- **Verification** — checks that DuckDB is reachable and that the expected tables exist  
+- **Reset** — clears out DuckDB state so you can start fresh with a clean pipeline run  
 
-Run it directly to see available options:
 
     python reset_duckdb.py
 
